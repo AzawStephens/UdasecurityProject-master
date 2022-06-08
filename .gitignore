@@ -1,0 +1,5 @@
+# Project exclude paths
+/imageModule/target/
+/securityModule/target/
+# Project exclude paths
+/target/

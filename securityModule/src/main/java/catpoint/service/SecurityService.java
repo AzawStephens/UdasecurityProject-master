@@ -104,13 +104,15 @@ public class SecurityService {
         try {
             switch(securityRepository.getAlarmStatus()) {
                 case PENDING_ALARM -> setAlarmStatus(AlarmStatus.NO_ALARM);
-                case ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);}
+                case ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
+                default -> setAlarmStatus(AlarmStatus.NO_ALARM);}
         }catch (NullPointerException exception){exception.getMessage();}
     }
 
     public AlarmStatus changeToPending(Sensor sensorStatus, ArmingStatus armingStatus) //Works with test 1
     {
         if(sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_HOME) ) {
+
            securityRepository.pendingAlarmStatus(sensorStatus, armingStatus);
             return AlarmStatus.PENDING_ALARM;
         } else if (sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_AWAY)) {
@@ -157,17 +159,18 @@ public class SecurityService {
    public AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus) //Works with test 5
    {
        boolean alreadyActive = sensor.getActive();
+       AlarmStatus thisAlarmStatus = AlarmStatus.NO_ALARM;
        if(alreadyActive && wishToActivate && alarmStatus.equals(AlarmStatus.PENDING_ALARM))
        {
            securityRepository.sensorAlreadyActivated(sensor,wishToActivate,alarmStatus);
-            return AlarmStatus.ALARM;
+           thisAlarmStatus = AlarmStatus.ALARM;
        }else if(!alreadyActive && !wishToActivate)
        {
            securityRepository.sensorAlreadyActivated(sensor,wishToActivate,alarmStatus);
-           return alarmStatus;
+            thisAlarmStatus = alarmStatus;
        }
 
-       return AlarmStatus.NO_ALARM;
+       return thisAlarmStatus;
    }
 
     public AlarmStatus noCatNoAlarmSet(boolean isThereACat, Set<Sensor> sensors) //Works with test 8

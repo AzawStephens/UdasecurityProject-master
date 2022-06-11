@@ -91,49 +91,6 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
         return armingStatus;
     }
 
-//    @Override
-//    public AlarmStatus justToSee(Sensor sensor) {
-//        return AlarmStatus.PENDING_ALARM;
-//    }
-
-    @Override
-    public AlarmStatus pendingAlarmStatus(Sensor sensor, ArmingStatus armingStatus) {
-        return AlarmStatus.PENDING_ALARM;
-    }
-
-    @Override
-    public AlarmStatus alarmStatus(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus) {
-        return AlarmStatus.ALARM;
-    }
-
-    @Override
-    public AlarmStatus noAlarmStatus(AlarmStatus alarmStatus, Set<Sensor> sensors) {
-        return AlarmStatus.NO_ALARM;
-    }
-
-    @Override
-    public AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus) {
-        return AlarmStatus.ALARM;
-    }
 
 
-    @Override
-    public AlarmStatus catDetectedAlarmStatus(Boolean isThereACat) {
-        return AlarmStatus.ALARM;
-    }
-
-    @Override
-    public AlarmStatus noCatDetected(Boolean isThereACat, Set<Sensor> sensors) {
-        return AlarmStatus.NO_ALARM;
-    }
-
-    @Override
-    public AlarmStatus noAlarm(ArmingStatus armingStatus) {
-        return AlarmStatus.NO_ALARM;
-    }
-
-    @Override
-    public Set<Sensor> resetSensors(ArmingStatus armingStatus, Set<Sensor> sensors) {
-        return sensors;
-    }
 }

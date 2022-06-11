@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
+import org.mockito.CheckReturnValue;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,19 +22,16 @@ public class SecurityServiceTest {
 
     @Mock
     private SecurityRepository repository;
-
     private SecurityService securityService;
-
     private boolean active = true;
     private Sensor sensor = new Sensor();
     private AlarmStatus pendingAlarmStatus = AlarmStatus.PENDING_ALARM;
-
     @Mock
     private ImageServiceInterface imageServiceInterface;
-
     @BeforeEach
     void init()
     {
+
             securityService = new SecurityService(repository, imageServiceInterface);
     }
 
@@ -44,8 +42,6 @@ public class SecurityServiceTest {
     {
         sensor.setActive(active);
         Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatus));
-       verify(repository,atLeastOnce()).pendingAlarmStatus(sensor,armingStatus);
-
     }
 
     @ParameterizedTest
@@ -55,12 +51,10 @@ public class SecurityServiceTest {
         sensor.setActive(active);
         Assertions.assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus,sensor,pendingAlarmStatus));
        Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.changeToAlarm(ArmingStatus.DISARMED,sensor,pendingAlarmStatus));
-        verify(repository, atLeastOnce()).alarmStatus(armingStatus,sensor,pendingAlarmStatus);
     }
     @Test
     void setStatusToNoAlarm_AlarmInPendingMode_NoSensorsAreActive_ReturnNoAlarmStatus() //TEST 3
     {
-
         Sensor sensor1 = new Sensor("Front Door",SensorType.DOOR);
         Sensor sensor2 = new Sensor("Back Door", SensorType.DOOR);
         boolean notActive = false;
@@ -70,7 +64,6 @@ public class SecurityServiceTest {
        theSensors.add(sensor1);
        theSensors.add(sensor2);
        Assertions.assertEquals(AlarmStatus.NO_ALARM,securityService.noAlarmSet(AlarmStatus.PENDING_ALARM,theSensors));
-      verify(repository, atLeastOnce()).noAlarmStatus(AlarmStatus.PENDING_ALARM,theSensors);
     }
 
    @ParameterizedTest
@@ -89,9 +82,7 @@ public class SecurityServiceTest {
        Sensor sensor = new Sensor("Back Window", SensorType.WINDOW);
        sensor.setActive(true);
         boolean wishToActivate = true;
-        when(repository.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus)).thenReturn(AlarmStatus.ALARM);
         Assertions.assertEquals(AlarmStatus.ALARM,securityService.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus));
-        verify(repository).sensorAlreadyActivated(sensor, wishToActivate,pendingAlarmStatus);
     }
     @Test
     void noChangesToAlarm_SensorIsNotActiveAlready_ReturnNoChange() //TEST 6
@@ -99,9 +90,7 @@ public class SecurityServiceTest {
         Sensor sensor = new Sensor("Back Window", SensorType.WINDOW);
         sensor.setActive(false);
         boolean wishToActivate = false;
-        when(repository.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus)).thenReturn(pendingAlarmStatus);
         Assertions.assertEquals(pendingAlarmStatus,securityService.sensorAlreadyActivated(sensor,wishToActivate,pendingAlarmStatus));
-        verify(repository).sensorAlreadyActivated(sensor, wishToActivate,pendingAlarmStatus);
     }
     @Test
     void catDetected_SystemInAtHomeStatus_ReturnsALARMIfCatIsFound() //TEST 7
@@ -131,7 +120,6 @@ public class SecurityServiceTest {
     {
         ArmingStatus armingStatus = ArmingStatus.DISARMED;
         Assertions.assertEquals(AlarmStatus.NO_ALARM,securityService.noAlarm(armingStatus));  //invokes the call to noAlarm
-        verify(repository, atLeastOnce()).noAlarm(armingStatus);
     }
     @ParameterizedTest
     @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY"})
@@ -173,7 +161,6 @@ public class SecurityServiceTest {
         securityService.handleSensorDeactivated();
         repository.setAlarmStatus(alarmStatus);
         repository.getAlarmStatus();
-
         verify(repository,atLeast(2)).getAlarmStatus();
     }
 }

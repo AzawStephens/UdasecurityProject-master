@@ -17,14 +17,7 @@ public interface SecurityRepository {
     Set<Sensor> getSensors();
     AlarmStatus getAlarmStatus();
     ArmingStatus getArmingStatus();
-    AlarmStatus pendingAlarmStatus(Sensor sensor, ArmingStatus armingStatus);
-    AlarmStatus alarmStatus(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus);
-    AlarmStatus noAlarmStatus(AlarmStatus alarmStatus, Set<Sensor> sensors);
-    AlarmStatus sensorAlreadyActivated(Sensor sensor, boolean wishToActivate, AlarmStatus alarmStatus);
-    AlarmStatus catDetectedAlarmStatus(Boolean isThereACat);
-    AlarmStatus noCatDetected(Boolean isThereACat, Set<Sensor> sensors);
-    AlarmStatus noAlarm(ArmingStatus armingStatus);
-    Set<Sensor> resetSensors(ArmingStatus armingStatus, Set<Sensor> sensors);
+
 
 
 }

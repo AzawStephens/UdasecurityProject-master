@@ -23,6 +23,7 @@ public class SecurityService {
         this.securityRepository = securityRepository;
         this.imageService = imageService;
     }
+    public SecurityService(){}
     /**
      * Sets the current arming status for the system. Changing the arming status
      * may update both the alarm status.
@@ -46,8 +47,7 @@ public class SecurityService {
             alarmStatus = AlarmStatus.ALARM;
         } else {
             setAlarmStatus(AlarmStatus.NO_ALARM);
-            alarmStatus = AlarmStatus.NO_ALARM;
-        }
+            alarmStatus = AlarmStatus.NO_ALARM;}
         statusListeners.forEach(sl -> sl.catDetected(cat));
         return alarmStatus;
     }
@@ -74,15 +74,14 @@ public class SecurityService {
      * Internal method for updating the alarm status when a sensor has been deactivated
      */
     public void handleSensorDeactivated() {
-        try {
             switch(securityRepository.getAlarmStatus()) {
                 case PENDING_ALARM -> setAlarmStatus(AlarmStatus.NO_ALARM);
                 case ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
                 default -> setAlarmStatus(AlarmStatus.NO_ALARM);}
-        }catch (NullPointerException exception){exception.getMessage();}
     }
     public AlarmStatus changeToPending(Sensor sensorStatus, ArmingStatus armingStatus) //Works with test 1
     {
+
         if(sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_HOME) ) {
             return AlarmStatus.PENDING_ALARM;
         } else if (sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_AWAY)) {
@@ -126,12 +125,11 @@ public class SecurityService {
      */
     public void changeSensorActivationStatus(Sensor sensor, Boolean active) { //Works with test 4 GUI PORTION
         if(securityRepository.getAlarmStatus()!=AlarmStatus.ALARM) {
-            if (active) {
+            if (!sensor.getActive() && active) {
                 handleSensorActivated();
-            } else if (sensor.getActive()) {
+            } else if (sensor.getActive() && !active) {
                 handleSensorDeactivated();
-            }
-        }
+            }}
         sensor.setActive(active);
         securityRepository.updateSensor(sensor);
     }

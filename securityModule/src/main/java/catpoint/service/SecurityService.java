@@ -41,15 +41,29 @@ public class SecurityService {
      * @param cat True if a cat is detected, otherwise false.
      */
     public AlarmStatus catDetected(Boolean cat) {
-        AlarmStatus alarmStatus;
-        if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME || cat) {
+        AlarmStatus alarmStatus = AlarmStatus.NO_ALARM;
+
+        if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME ) {
             setAlarmStatus(AlarmStatus.ALARM);
             alarmStatus = AlarmStatus.ALARM;
-        } else {
+
+        }
+        else if(!cat && !isSensorActive(securityRepository.getSensors())){
             setAlarmStatus(AlarmStatus.NO_ALARM);
             alarmStatus = AlarmStatus.NO_ALARM;}
         statusListeners.forEach(sl -> sl.catDetected(cat));
         return alarmStatus;
+    }
+    public boolean isSensorActive(Set<Sensor> sensors)
+    {
+        boolean active = false;
+        for (Sensor sensor : sensors)
+        {
+            if(sensor.getActive().equals(true));
+            active = true;
+            return  active;
+        }
+        return active;
     }
     /**
      * Register the StatusListener for alarm system updates from within the SecurityService.
@@ -81,12 +95,12 @@ public class SecurityService {
     }
     public AlarmStatus changeToPending(Sensor sensorStatus, ArmingStatus armingStatus) //Works with test 1
     {
-
+        AlarmStatus alarmStatus = AlarmStatus.NO_ALARM;
         if(sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_HOME) ) {
-            return AlarmStatus.PENDING_ALARM;
+            alarmStatus = AlarmStatus.PENDING_ALARM;
         } else if (sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_AWAY)) {
-            return AlarmStatus.PENDING_ALARM;}
-        return AlarmStatus.NO_ALARM;}
+            alarmStatus =  AlarmStatus.PENDING_ALARM;}
+        return alarmStatus;}
     public AlarmStatus changeToAlarm(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus) //Works with test 2
     {
         switch (armingStatus)
@@ -100,7 +114,7 @@ public class SecurityService {
     {for(Sensor sensor: sensors)
     {
         if(sensor.getActive()) //if a sensor is active
-        {return  AlarmStatus.PENDING_ALARM;}
+        {return  changeToPending(sensor,getArmingStatus());}
     }
         if(alarmStatus.equals(AlarmStatus.PENDING_ALARM))
         {
@@ -109,7 +123,7 @@ public class SecurityService {
     /**
      * Internal method for updating the alarm status when a sensor has been activated.
      */
-    private void handleSensorActivated() {
+    public void handleSensorActivated() {
         if(securityRepository.getArmingStatus() == ArmingStatus.DISARMED) {
             return; //no problem if the system is disarmed
         }

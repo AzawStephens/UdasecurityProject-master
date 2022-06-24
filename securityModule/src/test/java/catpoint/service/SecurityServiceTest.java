@@ -47,6 +47,7 @@ public class SecurityServiceTest {
     {
         sensor.setActive(active);
         Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatus));
+
     }
 
     @ParameterizedTest
@@ -172,7 +173,7 @@ public class SecurityServiceTest {
         Sensor aSensor = new Sensor("Front Door", SensorType.DOOR);
         aSensor.setActive(status);
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
-        securityService.changeSensorActivationStatus(aSensor, status);
+        securityService.changeSensorActivationStatus(aSensor, false);
 
     }
 
@@ -185,6 +186,14 @@ public class SecurityServiceTest {
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
         securityService.changeSensorActivationStatus(aSensor, true);
     }
-
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void handleSensorDeactivatedTest(boolean status)
+    {
+        Sensor aSensor = new Sensor("Front Door", SensorType.DOOR);
+        aSensor.setActive(status);
+        when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
+        securityService.handleSensorDeactivated();
+    }
 
 }

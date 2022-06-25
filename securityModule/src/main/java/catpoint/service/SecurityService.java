@@ -48,7 +48,7 @@ public class SecurityService {
             alarmStatus = AlarmStatus.ALARM;
 
         }
-        else if(!cat && !isSensorActive(securityRepository.getSensors())){
+        else if(!cat && isSensorActive(securityRepository.getSensors())){
             setAlarmStatus(AlarmStatus.NO_ALARM);
             alarmStatus = AlarmStatus.NO_ALARM;}
         statusListeners.forEach(sl -> sl.catDetected(cat));
@@ -72,9 +72,9 @@ public class SecurityService {
     public void addStatusListener(StatusListener statusListener) {
         statusListeners.add(statusListener);
     }
-//    public void removeStatusListener(StatusListener statusListener) {
-//        statusListeners.remove(statusListener);
-//    }
+    public void removeStatusListener(StatusListener statusListener) {
+        statusListeners.remove(statusListener);
+    }
     /**
      * Change the alarm status of the system and notify all listeners.
      * @param status

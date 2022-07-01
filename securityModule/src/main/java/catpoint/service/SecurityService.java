@@ -33,7 +33,13 @@ public class SecurityService {
         if(armingStatus == ArmingStatus.DISARMED) {
             securityRepository.setAlarmStatus(AlarmStatus.NO_ALARM);
         }
+        statusListeners.forEach(sl -> sl.notify(AlarmStatus.NO_ALARM));
+
+
+        statusListeners.forEach(StatusListener::sensorStatusChanged);
+
         securityRepository.setArmingStatus(armingStatus);
+
     }
     /**
      * Internal method that handles alarm status changes based on whether
@@ -43,7 +49,7 @@ public class SecurityService {
     public AlarmStatus catDetected(Boolean cat) {
         AlarmStatus alarmStatus = AlarmStatus.NO_ALARM;
 
-        if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME ) {
+        if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME) {
             setAlarmStatus(AlarmStatus.ALARM);
             alarmStatus = AlarmStatus.ALARM;
 
@@ -127,6 +133,9 @@ public class SecurityService {
         if(securityRepository.getArmingStatus() == ArmingStatus.DISARMED) {
             return; //no problem if the system is disarmed
         }
+
+
+
         switch(securityRepository.getAlarmStatus()) {
             case NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
             case PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);

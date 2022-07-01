@@ -1,6 +1,7 @@
 package catpoint.application;
 
 import catpoint.data.AlarmStatus;
+import catpoint.data.ArmingStatus;
 import catpoint.service.SecurityService;
 import catpoint.service.StyleService;
 import net.miginfocom.swing.MigLayout;
@@ -51,4 +52,6 @@ public class DisplayPanel extends JPanel implements StatusListener {
     public void sensorStatusChanged() {
         // no behavior necessary
     }
+
+
 }

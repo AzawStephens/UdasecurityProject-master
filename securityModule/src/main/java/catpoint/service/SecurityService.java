@@ -1,4 +1,5 @@
 package catpoint.service;
+import catpoint.application.SensorPanel;
 import catpoint.application.StatusListener;
 import catpoint.data.AlarmStatus;
 import catpoint.data.ArmingStatus;
@@ -8,6 +9,8 @@ import service.ImageServiceInterface;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * Service that receives information about changes to the security system. Responsible for
  * forwarding updates to the repository and making any decisions about changing the system state.
@@ -19,6 +22,7 @@ public class SecurityService {
     private ImageServiceInterface imageService;
     private SecurityRepository securityRepository;
     private Set<StatusListener> statusListeners = new HashSet<>();
+
     public SecurityService(SecurityRepository securityRepository, ImageServiceInterface imageService) {
         this.securityRepository = securityRepository;
         this.imageService = imageService;
@@ -30,44 +34,47 @@ public class SecurityService {
      * @param armingStatus
      */
     public void setArmingStatus(ArmingStatus armingStatus) {
+        boolean cat = true;
         if(armingStatus == ArmingStatus.DISARMED) {
             securityRepository.setAlarmStatus(AlarmStatus.NO_ALARM);
         }
+
         statusListeners.forEach(sl -> sl.notify(AlarmStatus.NO_ALARM));
-
-
+        securityRepository.setArmingStatus(armingStatus);
         statusListeners.forEach(StatusListener::sensorStatusChanged);
 
-        securityRepository.setArmingStatus(armingStatus);
 
     }
+
     /**
      * Internal method that handles alarm status changes based on whether
      * the camera currently shows a cat.
      * @param cat True if a cat is detected, otherwise false.
      */
-    public AlarmStatus catDetected(Boolean cat) {
-        AlarmStatus alarmStatus = AlarmStatus.NO_ALARM;
 
-        if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME) {
-            setAlarmStatus(AlarmStatus.ALARM);
-            alarmStatus = AlarmStatus.ALARM;
 
+    private void catDetected(Boolean cat) {
+        if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME  || cat && getArmingStatus() == ArmingStatus.ARMED_AWAY || isSensorActive()) {
+                setAlarmStatus(AlarmStatus.ALARM);
         }
-        else if(!cat && isSensorActive(securityRepository.getSensors())){
+        else {
             setAlarmStatus(AlarmStatus.NO_ALARM);
-            alarmStatus = AlarmStatus.NO_ALARM;}
+        }
         statusListeners.forEach(sl -> sl.catDetected(cat));
-        return alarmStatus;
+
     }
-    public boolean isSensorActive(Set<Sensor> sensors)
+    public boolean isSensorActive()
     {
+        Set<Sensor> sensors;
         boolean active = false;
+        sensors = securityRepository.getSensors();
         for (Sensor sensor : sensors)
         {
-            if(sensor.getActive().equals(true));
-            active = true;
-            return  active;
+            if(sensor.getActive().equals(true))
+            {
+                active = true;
+                return active;
+            }
         }
         return active;
     }
@@ -77,6 +84,7 @@ public class SecurityService {
      */
     public void addStatusListener(StatusListener statusListener) {
         statusListeners.add(statusListener);
+
     }
     public void removeStatusListener(StatusListener statusListener) {
         statusListeners.remove(statusListener);
@@ -135,11 +143,12 @@ public class SecurityService {
         }
 
 
-
-        switch(securityRepository.getAlarmStatus()) {
-            case NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
-            case PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);
+            switch(securityRepository.getAlarmStatus()) {
+                case NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
+                case PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);
         }
+
+
     }
     /**
      * Change the activation status for the specified sensor and update alarm status if necessary.
@@ -184,7 +193,7 @@ public class SecurityService {
                 }
             }
         }
-        return catDetected(isThereACat);
+       return AlarmStatus.NO_ALARM;
     }
     public AlarmStatus noAlarm(ArmingStatus armingStatus) //for test 9
     {

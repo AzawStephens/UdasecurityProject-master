@@ -19,5 +19,4 @@ public interface SecurityRepository {
     ArmingStatus getArmingStatus();
 
 
-
 }

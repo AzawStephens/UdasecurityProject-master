@@ -34,16 +34,27 @@ public class SecurityService {
      * @param armingStatus
      */
     public void setArmingStatus(ArmingStatus armingStatus) {
-        boolean cat = true;
+
+
+
         if(armingStatus == ArmingStatus.DISARMED) {
             securityRepository.setAlarmStatus(AlarmStatus.NO_ALARM);
         }
 
+        else if(armingStatus == ArmingStatus.ARMED_HOME || armingStatus == ArmingStatus.ARMED_AWAY) {
+
+
+            for(Sensor s : securityRepository.getSensors())
+            {
+                s.setActive(false);
+            }
+        }
+
         statusListeners.forEach(sl -> sl.notify(AlarmStatus.NO_ALARM));
+
         securityRepository.setArmingStatus(armingStatus);
         statusListeners.forEach(StatusListener::sensorStatusChanged);
-
-
+        
     }
 
     /**
@@ -54,13 +65,17 @@ public class SecurityService {
 
 
     private void catDetected(Boolean cat) {
-        if(cat && getArmingStatus() == ArmingStatus.ARMED_HOME  || cat && getArmingStatus() == ArmingStatus.ARMED_AWAY || isSensorActive()) {
-                setAlarmStatus(AlarmStatus.ALARM);
+        if (cat && getArmingStatus() == ArmingStatus.ARMED_HOME || cat && getArmingStatus() == ArmingStatus.ARMED_AWAY) {
+            setAlarmStatus(AlarmStatus.ALARM);
+        } else if (!cat && getArmingStatus() == ArmingStatus.ARMED_HOME && isSensorActive() || !cat && getArmingStatus() == ArmingStatus.ARMED_AWAY && isSensorActive())
+        {
+            setAlarmStatus(AlarmStatus.ALARM);
         }
-        else {
-            setAlarmStatus(AlarmStatus.NO_ALARM);
-        }
+
+        else {setAlarmStatus(AlarmStatus.NO_ALARM);}
+
         statusListeners.forEach(sl -> sl.catDetected(cat));
+
 
     }
     public boolean isSensorActive()
@@ -141,14 +156,10 @@ public class SecurityService {
         if(securityRepository.getArmingStatus() == ArmingStatus.DISARMED) {
             return; //no problem if the system is disarmed
         }
-
-
             switch(securityRepository.getAlarmStatus()) {
                 case NO_ALARM -> setAlarmStatus(AlarmStatus.PENDING_ALARM);
                 case PENDING_ALARM -> setAlarmStatus(AlarmStatus.ALARM);
         }
-
-
     }
     /**
      * Change the activation status for the specified sensor and update alarm status if necessary.

@@ -19,6 +19,7 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
     private Set<Sensor> sensors;
     private AlarmStatus alarmStatus;
     private ArmingStatus armingStatus;
+    public boolean catStat;
 
     //preference keys
     private static final String SENSORS = "SENSORS";
@@ -91,6 +92,14 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
         return armingStatus;
     }
 
+    @Override
+    public boolean getCatStatus(){return catStat; }
+
+    @Override
+    public void setCatStatus(boolean catStat)
+    {
+        this.catStat = catStat;
+    }
 
 
 

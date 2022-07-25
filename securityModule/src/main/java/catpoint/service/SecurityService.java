@@ -1,10 +1,7 @@
 package catpoint.service;
 import catpoint.application.SensorPanel;
 import catpoint.application.StatusListener;
-import catpoint.data.AlarmStatus;
-import catpoint.data.ArmingStatus;
-import catpoint.data.SecurityRepository;
-import catpoint.data.Sensor;
+import catpoint.data.*;
 import service.ImageServiceInterface;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
@@ -35,14 +32,11 @@ public class SecurityService {
      */
     public void setArmingStatus(ArmingStatus armingStatus) {
 
-
-
         if(armingStatus == ArmingStatus.DISARMED) {
             securityRepository.setAlarmStatus(AlarmStatus.NO_ALARM);
         }
 
         else if(armingStatus == ArmingStatus.ARMED_HOME || armingStatus == ArmingStatus.ARMED_AWAY) {
-
 
             for(Sensor s : securityRepository.getSensors())
             {
@@ -51,7 +45,6 @@ public class SecurityService {
         }
 
         statusListeners.forEach(sl -> sl.notify(AlarmStatus.NO_ALARM));
-
         securityRepository.setArmingStatus(armingStatus);
         statusListeners.forEach(StatusListener::sensorStatusChanged);
         
@@ -65,17 +58,22 @@ public class SecurityService {
 
 
     private void catDetected(Boolean cat) {
+        securityRepository.setCatStatus(cat);
         if (cat && getArmingStatus() == ArmingStatus.ARMED_HOME || cat && getArmingStatus() == ArmingStatus.ARMED_AWAY) {
-            setAlarmStatus(AlarmStatus.ALARM);
+                if(securityRepository.getCatStatus())
+                {
+                    setAlarmStatus(AlarmStatus.ALARM);
+
+                }
+
         } else if (!cat && getArmingStatus() == ArmingStatus.ARMED_HOME && isSensorActive() || !cat && getArmingStatus() == ArmingStatus.ARMED_AWAY && isSensorActive())
         {
             setAlarmStatus(AlarmStatus.ALARM);
         }
-
         else {setAlarmStatus(AlarmStatus.NO_ALARM);}
 
+        
         statusListeners.forEach(sl -> sl.catDetected(cat));
-
 
     }
     public boolean isSensorActive()
@@ -109,6 +107,7 @@ public class SecurityService {
      * @param status
      */
     public void setAlarmStatus(AlarmStatus status) {
+
         securityRepository.setAlarmStatus(status);
         statusListeners.forEach(sl -> sl.notify(status));
     }

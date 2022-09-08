@@ -69,6 +69,8 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
     public void setAlarmStatus(AlarmStatus alarmStatus) {
         this.alarmStatus = alarmStatus;
         prefs.put(ALARM_STATUS, this.alarmStatus.toString());
+
+
     }
 
     @Override

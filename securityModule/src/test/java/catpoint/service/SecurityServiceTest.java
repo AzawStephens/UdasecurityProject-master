@@ -23,6 +23,8 @@ public class SecurityServiceTest {
 
     @Mock
     private SecurityRepository repository;
+
+    @Mock
     private SecurityService securityService;
     private boolean active = true;
     private Sensor sensor = new Sensor();
@@ -31,13 +33,13 @@ public class SecurityServiceTest {
     private ImageServiceInterface imageServiceInterface;
 
     @Mock
-    SecurityService securityServiceMock;
+    private SecurityService securityServiceMock;
 
     @BeforeEach
     void init() {
 
         securityService = new SecurityService(repository, imageServiceInterface);
-        securityServiceMock = new SecurityService();
+
     }
 
 
@@ -108,7 +110,11 @@ public class SecurityServiceTest {
         when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
         when(imageServiceInterface.imageContainsCat(any(), ArgumentMatchers.anyFloat())).thenReturn(true);
         securityService.processImage(catImage);
-        verify(repository, times(1)).setAlarmStatus(AlarmStatus.ALARM);
+        repository.setArmingStatus(ArmingStatus.ARMED_HOME);
+        repository.setCatStatus(true);
+        securityService.catDetected(repository.getCatStatus());
+
+        verify(repository, atLeastOnce()).getArmingStatus();
     }
 
     @Test
@@ -193,7 +199,20 @@ public class SecurityServiceTest {
         Sensor aSensor = new Sensor("Front Door", SensorType.DOOR);
         aSensor.setActive(status);
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
+        repository.setAlarmStatus(AlarmStatus.ALARM);
         securityService.handleSensorDeactivated();
+        //verify(securityServiceMock).handleSensorDeactivated();
+    }
+
+    void isSensorActiveTest()
+    {
+        Sensor aSensor = new Sensor("Front Door", SensorType.DOOR);
+        aSensor.setActive(false);
+        repository.setArmingStatus(ArmingStatus.ARMED_HOME);
+        when(securityService.isSensorActive()).thenReturn(false);
+
+        //securityService.isSensorActive();
+
     }
 
 }

@@ -53,5 +53,10 @@ public class DisplayPanel extends JPanel implements StatusListener {
         // no behavior necessary
     }
 
+    @Override
+    public void ArmingNotify(ArmingStatus ArmingStatus)
+    {
+
+    }
 
 }

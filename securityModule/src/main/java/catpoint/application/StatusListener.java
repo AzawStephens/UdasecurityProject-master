@@ -10,5 +10,5 @@ public interface StatusListener {
     void notify(AlarmStatus status);
     void catDetected(boolean catDetected);
     void sensorStatusChanged();
-   //void notify(ArmingStatus status);
+    void ArmingNotify(ArmingStatus status);
 }

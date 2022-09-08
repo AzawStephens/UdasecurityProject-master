@@ -90,5 +90,10 @@ public class ImagePanel extends JPanel implements StatusListener {
     public void sensorStatusChanged() {
         //no behavior necessary
     }
+    @Override
+    public void ArmingNotify(ArmingStatus ArmingStatus)
+    {
+
+    }
 
 }

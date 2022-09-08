@@ -19,35 +19,36 @@ public class SecurityService {
     private ImageServiceInterface imageService;
     private SecurityRepository securityRepository;
     private Set<StatusListener> statusListeners = new HashSet<>();
+    private boolean catStat = false;
 
     public SecurityService(SecurityRepository securityRepository, ImageServiceInterface imageService) {
         this.securityRepository = securityRepository;
         this.imageService = imageService;
     }
-    public SecurityService(){}
+
     /**
      * Sets the current arming status for the system. Changing the arming status
      * may update both the alarm status.
      * @param armingStatus
      */
-    public void setArmingStatus(ArmingStatus armingStatus) {
-
+   public void setArmingStatus(ArmingStatus armingStatus) {
+       securityRepository.setArmingStatus(armingStatus);
+       if(securityRepository.getCatStatus() && securityRepository.getArmingStatus().equals(ArmingStatus.ARMED_HOME))
+       {
+           securityRepository.setAlarmStatus(AlarmStatus.ALARM);
+       }
         if(armingStatus == ArmingStatus.DISARMED) {
             securityRepository.setAlarmStatus(AlarmStatus.NO_ALARM);
         }
-
         else if(armingStatus == ArmingStatus.ARMED_HOME || armingStatus == ArmingStatus.ARMED_AWAY) {
-
             for(Sensor s : securityRepository.getSensors())
             {
                 s.setActive(false);
             }
         }
-
         statusListeners.forEach(sl -> sl.notify(AlarmStatus.NO_ALARM));
-        securityRepository.setArmingStatus(armingStatus);
+
         statusListeners.forEach(StatusListener::sensorStatusChanged);
-        
     }
 
     /**
@@ -57,23 +58,20 @@ public class SecurityService {
      */
 
 
-    private void catDetected(Boolean cat) {
-        securityRepository.setCatStatus(cat);
-        if (cat && getArmingStatus() == ArmingStatus.ARMED_HOME || cat && getArmingStatus() == ArmingStatus.ARMED_AWAY) {
-                if(securityRepository.getCatStatus())
-                {
-                    setAlarmStatus(AlarmStatus.ALARM);
+     void catDetected(Boolean cat) {
 
-                }
+         statusListeners.forEach(sl -> sl.catDetected(cat));
+         securityRepository.setCatStatus(cat);
+         catStat = securityRepository.getCatStatus();
 
-        } else if (!cat && getArmingStatus() == ArmingStatus.ARMED_HOME && isSensorActive() || !cat && getArmingStatus() == ArmingStatus.ARMED_AWAY && isSensorActive())
+        if (catStat && getArmingStatus() == ArmingStatus.ARMED_HOME || catStat && getArmingStatus() == ArmingStatus.ARMED_AWAY) {
+            setAlarmStatus(AlarmStatus.ALARM);
+
+        } else if (!catStat && getArmingStatus() == ArmingStatus.ARMED_HOME && isSensorActive() || !catStat && getArmingStatus() == ArmingStatus.ARMED_AWAY && isSensorActive())
         {
             setAlarmStatus(AlarmStatus.ALARM);
         }
         else {setAlarmStatus(AlarmStatus.NO_ALARM);}
-
-        
-        statusListeners.forEach(sl -> sl.catDetected(cat));
 
     }
     public boolean isSensorActive()
@@ -97,11 +95,8 @@ public class SecurityService {
      */
     public void addStatusListener(StatusListener statusListener) {
         statusListeners.add(statusListener);
-
     }
-    public void removeStatusListener(StatusListener statusListener) {
-        statusListeners.remove(statusListener);
-    }
+    public void removeStatusListener(StatusListener statusListener) {statusListeners.remove(statusListener);}
     /**
      * Change the alarm status of the system and notify all listeners.
      * @param status

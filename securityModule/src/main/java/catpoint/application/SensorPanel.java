@@ -1,6 +1,7 @@
 package catpoint.application;
 
 import catpoint.data.AlarmStatus;
+import catpoint.data.ArmingStatus;
 import catpoint.data.Sensor;
 import catpoint.data.SensorType;
 import catpoint.service.SecurityService;
@@ -131,4 +132,9 @@ public class SensorPanel extends JPanel implements StatusListener{
     }
     @Override
     public void catDetected(boolean cat){}
+    @Override
+    public void ArmingNotify(ArmingStatus ArmingStatus)
+    {
+
+    }
 }

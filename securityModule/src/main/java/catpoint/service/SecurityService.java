@@ -39,6 +39,10 @@ public class SecurityService {
 
       public  void setArmingStatus(ArmingStatus armingStatus) {
 
+          if(armingStatus == ArmingStatus.DISARMED)
+          {
+              setAlarmStatus(AlarmStatus.NO_ALARM);
+          }
        if(saveArmingStatus() == ArmingStatus.DISARMED && securityRepository.getCatStatus()) {
 
           setAlarmStatus(AlarmStatus.ALARM);

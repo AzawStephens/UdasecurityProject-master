@@ -20,10 +20,14 @@ public class SecurityService {
     private SecurityRepository securityRepository;
     private Set<StatusListener> statusListeners = new HashSet<>();
     private boolean catStat = false;
+    ArmingStatus current;
+
+
 
     public SecurityService(SecurityRepository securityRepository, ImageServiceInterface imageService) {
         this.securityRepository = securityRepository;
         this.imageService = imageService;
+
     }
 
     /**
@@ -31,26 +35,29 @@ public class SecurityService {
      * may update both the alarm status.
      * @param armingStatus
      */
-   public void setArmingStatus(ArmingStatus armingStatus) {
-       securityRepository.setArmingStatus(armingStatus);
-       if(securityRepository.getCatStatus() && securityRepository.getArmingStatus().equals(ArmingStatus.ARMED_HOME))
-       {
-           securityRepository.setAlarmStatus(AlarmStatus.ALARM);
-       }
-        if(armingStatus == ArmingStatus.DISARMED) {
-            securityRepository.setAlarmStatus(AlarmStatus.NO_ALARM);
+
+
+      public  void setArmingStatus(ArmingStatus armingStatus) {
+
+       if(saveArmingStatus() == ArmingStatus.DISARMED && securityRepository.getCatStatus()) {
+
+          setAlarmStatus(AlarmStatus.ALARM);
         }
         else if(armingStatus == ArmingStatus.ARMED_HOME || armingStatus == ArmingStatus.ARMED_AWAY) {
+
             for(Sensor s : securityRepository.getSensors())
             {
                 s.setActive(false);
             }
         }
-        statusListeners.forEach(sl -> sl.notify(AlarmStatus.NO_ALARM));
-
-        statusListeners.forEach(StatusListener::sensorStatusChanged);
+       statusListeners.forEach(StatusListener::sensorStatusChanged);
+      securityRepository.setArmingStatus(armingStatus);
     }
-
+public ArmingStatus saveArmingStatus()
+{
+    current = getArmingStatus();
+    return current;
+}
     /**
      * Internal method that handles alarm status changes based on whether
      * the camera currently shows a cat.
@@ -243,6 +250,8 @@ public class SecurityService {
         securityRepository.removeSensor(sensor);
     }
     public ArmingStatus getArmingStatus() {
+
         return securityRepository.getArmingStatus();
+
     }
 }

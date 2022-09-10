@@ -1,12 +1,11 @@
 package catpoint.service;
-import catpoint.application.SensorPanel;
 import catpoint.application.StatusListener;
 import catpoint.data.*;
 import service.ImageServiceInterface;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
+
 
 /**
  * Service that receives information about changes to the security system. Responsible for
@@ -40,9 +39,7 @@ public class SecurityService {
       public  void setArmingStatus(ArmingStatus armingStatus) {
 
           if(armingStatus == ArmingStatus.DISARMED)
-          {
-              setAlarmStatus(AlarmStatus.NO_ALARM);
-          }
+          {setAlarmStatus(AlarmStatus.NO_ALARM);}
        if(saveArmingStatus() == ArmingStatus.DISARMED && securityRepository.getCatStatus()) {
 
           setAlarmStatus(AlarmStatus.ALARM);
@@ -50,13 +47,9 @@ public class SecurityService {
         else if(armingStatus == ArmingStatus.ARMED_HOME || armingStatus == ArmingStatus.ARMED_AWAY) {
 
             for(Sensor s : securityRepository.getSensors())
-            {
-                s.setActive(false);
-            }
-        }
+            {s.setActive(false);}}
        statusListeners.forEach(StatusListener::sensorStatusChanged);
-      securityRepository.setArmingStatus(armingStatus);
-    }
+      securityRepository.setArmingStatus(armingStatus);}
 public ArmingStatus saveArmingStatus()
 {
     current = getArmingStatus();
@@ -79,12 +72,8 @@ public ArmingStatus saveArmingStatus()
             setAlarmStatus(AlarmStatus.ALARM);
 
         } else if (!catStat && getArmingStatus() == ArmingStatus.ARMED_HOME && isSensorActive() || !catStat && getArmingStatus() == ArmingStatus.ARMED_AWAY && isSensorActive())
-        {
-            setAlarmStatus(AlarmStatus.ALARM);
-        }
-        else {setAlarmStatus(AlarmStatus.NO_ALARM);}
-
-    }
+        {setAlarmStatus(AlarmStatus.ALARM);}
+        else {setAlarmStatus(AlarmStatus.NO_ALARM);}}
     public boolean isSensorActive()
     {
         Set<Sensor> sensors;
@@ -95,8 +84,7 @@ public ArmingStatus saveArmingStatus()
             if(sensor.getActive().equals(true))
             {
                 active = true;
-                return active;
-            }
+                return active;}
         }
         return active;
     }
@@ -113,11 +101,8 @@ public ArmingStatus saveArmingStatus()
      * @param status
      */
     public void setAlarmStatus(AlarmStatus status) {
-
         securityRepository.setAlarmStatus(status);
-        statusListeners.forEach(sl -> sl.notify(status));
-    }
-
+        statusListeners.forEach(sl -> sl.notify(status));}
     /**
      * Internal method for updating the alarm status when a sensor has been deactivated
      */

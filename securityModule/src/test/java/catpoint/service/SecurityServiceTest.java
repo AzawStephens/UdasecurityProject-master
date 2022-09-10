@@ -204,37 +204,28 @@ public class SecurityServiceTest {
     @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY", "DISARMED"})
     void setArmingStatusTest(ArmingStatus armingStatus)
     {
-       // repository.setCatStatus(true);
         repository.setArmingStatus(ArmingStatus.DISARMED);
        when(repository.getArmingStatus()).thenReturn(armingStatus);
        securityService.setArmingStatus(ArmingStatus.DISARMED);
        lenient().when(repository.getCatStatus()).thenReturn(true);
        lenient().when(securityService.saveArmingStatus()).thenReturn(ArmingStatus.DISARMED);
-        securityService.setArmingStatus(ArmingStatus.DISARMED);
-        //verify(repository).setAlarmStatus(AlarmStatus.ALARM);
+       securityService.setArmingStatus(ArmingStatus.DISARMED);
     }
-
-
+    @Test
+    void catDetectedTest()
+    {
+            lenient().when(repository.getCatStatus()).thenReturn(true);
+            lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+            securityService.catDetected(true);
+            lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+            securityService.catDetected(false);
+    }
 //    @Test
 //    void isSensorActiveTest()
 //    {
-//       // Set<Sensor> sensors = new HashSet<>();
-//        Sensor sensor1 = new Sensor();
-//        Sensor sensor2 = new Sensor();
-//        //sensors.add(sensor1);
-//        //sensors.add(sensor2);
-//        repository.addSensor(sensor1);
-//        repository.addSensor(sensor2);
-//        for(Sensor sensor : repository.getSensors())
-//        {
-//            sensor.setActive(true);
-//        }
-//
-//
 //        when(securityService.isSensorActive()).thenReturn(true);
-//
-//        //securityService.isSensorActive();
-//
 //    }
+
+
 
 }

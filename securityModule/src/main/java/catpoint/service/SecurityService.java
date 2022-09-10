@@ -130,15 +130,18 @@ public ArmingStatus saveArmingStatus()
             case DISARMED -> {return AlarmStatus.NO_ALARM;}
         }return AlarmStatus.NO_ALARM;}
     public AlarmStatus noAlarmSet(AlarmStatus alarmStatus, Set<Sensor> sensors) //Works with test 3
-    {for(Sensor sensor: sensors)
+    {
+        for(Sensor sensor: sensors)
     {
         if(sensor.getActive()) //if a sensor is active
-        {return  changeToPending(sensor,getArmingStatus());}
+        {
+            return  changeToPending(sensor,getArmingStatus());
+        }
     }
         if(alarmStatus.equals(AlarmStatus.PENDING_ALARM))
-        {
-            return AlarmStatus.NO_ALARM;}
-        return AlarmStatus.PENDING_ALARM;}
+        {return AlarmStatus.NO_ALARM;}
+        return AlarmStatus.PENDING_ALARM;
+    }
     /**
      * Internal method for updating the alarm status when a sensor has been activated.
      */
@@ -184,12 +187,9 @@ public ArmingStatus saveArmingStatus()
     }
     public AlarmStatus noCatNoAlarmSet(boolean isThereACat, Set<Sensor> sensors) //Works with test 8
     {
-        if(!isThereACat)
-        {
-            for(Sensor sensor: sensors)
-            {
-                if(sensor.getActive()) //if a sensor is active
-                {
+        if(!isThereACat) {
+            for(Sensor sensor: sensors) {
+                if(sensor.getActive()) {
                     return  AlarmStatus.PENDING_ALARM;
                 }
             }

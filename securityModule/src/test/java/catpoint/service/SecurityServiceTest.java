@@ -73,6 +73,7 @@ public class SecurityServiceTest {
         theSensors.add(sensor1);
         theSensors.add(sensor2);
         Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors));
+        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.noAlarmSet(AlarmStatus.NO_ALARM, theSensors));
     }
 
     @ParameterizedTest
@@ -117,8 +118,9 @@ public class SecurityServiceTest {
         verify(repository, atLeastOnce()).getArmingStatus();
     }
 
-    @Test
-    void noCatNoAlarm_NoSensorsActivated_ReturnNoAlarm() //Test 8
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void noCatNoAlarm_NoSensorsActivated_ReturnNoAlarm(boolean isActiveValue) //Test 8
     {
         Sensor sensor1 = new Sensor("Back door", SensorType.DOOR);
         Sensor sensor2 = new Sensor("Front window", SensorType.WINDOW);
@@ -130,6 +132,11 @@ public class SecurityServiceTest {
         theSensors.add(sensor1);
         theSensors.add(sensor2);
         Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noCatNoAlarmSet(catDetected, theSensors));
+        isActive = true;
+        sensor1.setActive(isActive);
+        sensor2.setActive(isActive);
+        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.noCatNoAlarmSet(catDetected, theSensors));
+
     }
 
     @Test
@@ -137,7 +144,7 @@ public class SecurityServiceTest {
     {
         ArmingStatus armingStatus = ArmingStatus.DISARMED;
         Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarm(armingStatus));  //invokes the call to noAlarm
-
+        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.noAlarm(ArmingStatus.ARMED_HOME));
     }
 
     @ParameterizedTest

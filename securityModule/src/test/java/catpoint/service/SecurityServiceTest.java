@@ -192,6 +192,8 @@ public class SecurityServiceTest {
         aSensor.setActive(status);
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
         securityService.changeSensorActivationStatus(aSensor, true);
+        when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
+        securityService.handleSensorActivated();
     }
     @Test
     void handleSensorDeactivatedTest_systemSetToAlarm_runsSpecificBranchInHandleSensorDeactivatedMethod()
@@ -199,6 +201,8 @@ public class SecurityServiceTest {
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.ALARM);
         securityService.handleSensorDeactivated();
         verify(repository).setAlarmStatus(AlarmStatus.PENDING_ALARM);
+        lenient().when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
+        securityService.handleSensorDeactivated();
     }
     @ParameterizedTest
     @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY", "DISARMED"})
@@ -219,6 +223,12 @@ public class SecurityServiceTest {
             securityService.catDetected(true);
             lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
             securityService.catDetected(false);
+
+        lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+        sensor.setActive(true);
+        securityService.addSensor(sensor);
+        securityService.catDetected(false);
+        verify(repository, atLeast(2)).setAlarmStatus(AlarmStatus.ALARM);
     }
 //    @Test
 //    void isSensorActiveTest()

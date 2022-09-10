@@ -137,6 +137,7 @@ public class SecurityServiceTest {
     {
         ArmingStatus armingStatus = ArmingStatus.DISARMED;
         Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarm(armingStatus));  //invokes the call to noAlarm
+
     }
 
     @ParameterizedTest
@@ -192,27 +193,48 @@ public class SecurityServiceTest {
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
         securityService.changeSensorActivationStatus(aSensor, true);
     }
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void handleSensorDeactivatedTest(boolean status)
+    @Test
+    void handleSensorDeactivatedTest_systemSetToAlarm_runsSpecificBranchInHandleSensorDeactivatedMethod()
     {
-        Sensor aSensor = new Sensor("Front Door", SensorType.DOOR);
-        aSensor.setActive(status);
-        when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
-        repository.setAlarmStatus(AlarmStatus.ALARM);
+        when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.ALARM);
         securityService.handleSensorDeactivated();
-        //verify(securityServiceMock).handleSensorDeactivated();
+        verify(repository).setAlarmStatus(AlarmStatus.PENDING_ALARM);
     }
-
-    void isSensorActiveTest()
+    @ParameterizedTest
+    @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY", "DISARMED"})
+    void setArmingStatusTest(ArmingStatus armingStatus)
     {
-        Sensor aSensor = new Sensor("Front Door", SensorType.DOOR);
-        aSensor.setActive(false);
-        repository.setArmingStatus(ArmingStatus.ARMED_HOME);
-        when(securityService.isSensorActive()).thenReturn(false);
-
-        //securityService.isSensorActive();
-
+       // repository.setCatStatus(true);
+        repository.setArmingStatus(ArmingStatus.DISARMED);
+       when(repository.getArmingStatus()).thenReturn(armingStatus);
+       securityService.setArmingStatus(ArmingStatus.DISARMED);
+       lenient().when(repository.getCatStatus()).thenReturn(true);
+       lenient().when(securityService.saveArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+        securityService.setArmingStatus(ArmingStatus.DISARMED);
+        //verify(repository).setAlarmStatus(AlarmStatus.ALARM);
     }
+
+
+//    @Test
+//    void isSensorActiveTest()
+//    {
+//       // Set<Sensor> sensors = new HashSet<>();
+//        Sensor sensor1 = new Sensor();
+//        Sensor sensor2 = new Sensor();
+//        //sensors.add(sensor1);
+//        //sensors.add(sensor2);
+//        repository.addSensor(sensor1);
+//        repository.addSensor(sensor2);
+//        for(Sensor sensor : repository.getSensors())
+//        {
+//            sensor.setActive(true);
+//        }
+//
+//
+//        when(securityService.isSensorActive()).thenReturn(true);
+//
+//        //securityService.isSensorActive();
+//
+//    }
 
 }

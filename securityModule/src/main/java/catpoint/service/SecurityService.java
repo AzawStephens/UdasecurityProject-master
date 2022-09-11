@@ -46,8 +46,10 @@ public class SecurityService {
         }
         else if(armingStatus == ArmingStatus.ARMED_HOME || armingStatus == ArmingStatus.ARMED_AWAY) {
 
-            for(Sensor s : securityRepository.getSensors())
-            {s.setActive(false);}}
+            resetSensors(securityRepository.getSensors());
+//            for(Sensor s : securityRepository.getSensors())
+//            {s.setActive(false);}
+        }
         statusListeners.forEach(StatusListener::sensorStatusChanged);
       securityRepository.setArmingStatus(armingStatus);}
 public ArmingStatus saveArmingStatus()
@@ -55,11 +57,21 @@ public ArmingStatus saveArmingStatus()
     current = getArmingStatus();
     return current;
 }
+
+    public Set<Sensor> resetSensors(Set<Sensor> sensors)
+    {
+        for(Sensor s : sensors)
+        {
+            s.setActive(false);
+        }
+        return sensors;
+    }
     /**
      * Internal method that handles alarm status changes based on whether
      * the camera currently shows a cat.
      * @param cat True if a cat is detected, otherwise false.
      */
+
 
 
      void catDetected(Boolean cat) {
@@ -88,21 +100,7 @@ public ArmingStatus saveArmingStatus()
             }
         }
         else {setAlarmStatus(AlarmStatus.NO_ALARM);}}
-//    public boolean isSensorActive()
-//    {
-//        Set<Sensor> sensors;
-//        boolean active= false;
-//        sensors = securityRepository.getSensors();
-//        for (Sensor sensor : sensors)
-//        {
-//            if(sensor.getActive().equals(true))
-//            {
-//                active = true;
-//                return active;
-//            }
-//        }
-//        return active;
-//    }
+
     /**
      * Register the StatusListener for alarm system updates from within the SecurityService.
      * @param statusListener

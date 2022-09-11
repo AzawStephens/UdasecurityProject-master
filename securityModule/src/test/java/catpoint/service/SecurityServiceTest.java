@@ -1,13 +1,10 @@
 package catpoint.service;
 import catpoint.data.*;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
-import org.mockito.CheckReturnValue;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,9 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,8 +40,6 @@ public class SecurityServiceTest {
     void init() {
 
         securityService = new SecurityService(repository, imageServiceInterface);
-        //sensorMock = new Sensor("Front door",SensorType.DOOR);
-
     }
 
 
@@ -228,28 +221,11 @@ public class SecurityServiceTest {
        lenient().when(securityService.saveArmingStatus()).thenReturn(ArmingStatus.DISARMED);
        securityService.setArmingStatus(ArmingStatus.ARMED_HOME);
         verify(repository).setArmingStatus(ArmingStatus.ARMED_HOME);
-
-       // Set<Sensor> sensors = new HashSet<>();
-
-        //sensors.add(sensor1);
-        //sensors.add(sensor2);
-
-
-
-        //sensor1.setActive(false);
-        //sensor2.setActive(false);
-       // securityService.setArmingStatus(ArmingStatus.ARMED_AWAY);
-
-       // repository.setArmingStatus(armingStatus);
-
-
         sensor.setActive(false);
     }
     @ParameterizedTest
     @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY"})
     void setArmingStatusTestTwo(ArmingStatus armingStatus) {
-
-
         Sensor sensor1 = new Sensor("Living Room", SensorType.DOOR);
         Sensor sensor2 = new Sensor("Back door", SensorType.DOOR);
         repository.addSensor(sensor1);
@@ -258,7 +234,6 @@ public class SecurityServiceTest {
         sensor2.setActive(false);
         securityService.setArmingStatus(armingStatus);
         sensorMock.setActive(false);
-       // verify(sensorMock).setActive(false);
     }
 
     @Test
@@ -285,43 +260,6 @@ public class SecurityServiceTest {
             lenient().when(repository.getCatStatus()).thenReturn(false);
             lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
         securityService.catDetected(false);
-
-
-
-
-            //repository.setArmingStatus(ArmingStatus.ARMED_HOME);
-            //lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
-       //lenient().when(securityServiceMock.isSensorActive()).thenReturn(true);
-      //  Set<Sensor> sensors = new HashSet<>();
-//        Sensor sensor1 = new Sensor("Front door", SensorType.DOOR);
-//        Sensor sensor2 = new Sensor("Back door", SensorType.WINDOW);
-//        sensor1.setActive(true);
-//        sensor2.setActive(true);
-//        repository.addSensor(sensor1);
-//        repository.addSensor(sensor2);
-//        repository.updateSensor(sensor1);
-//        repository.updateSensor(sensor2);
-
-        //securityService.isSensorActive();
-       // securityService.catDetected(false);
-       //
-        //   lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
-
-
-
-//
-//            lenient().when(repository.getCatStatus()).thenReturn(false);
-//            repository.setCatStatus(true);
-//           lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
-//            sensorMock.setActive(true);
-//        securityService.catDetected(false);
-
-
-
-
-        //assertEquals(AlarmStatus.NO_ALARM, repository.getAlarmStatus());
-
-      // verify(repository, atLeast(2)).setAlarmStatus(AlarmStatus.ALARM);
     }
     @Test
     void catDetectedPartTwo()
@@ -330,34 +268,31 @@ public class SecurityServiceTest {
         Set<Sensor> sensors = new HashSet<>(2);
         Sensor aSensor = new Sensor("front door", SensorType.DOOR);
         Sensor sensor2 = new Sensor("back door", SensorType.DOOR);
-        //Sensor aSensor2 = new Sensor("back door", SensorType.DOOR);
-
-       // aSensor.setActive(true);
-       // aSensor.setActive(true);
-      //  repository.addSensor(aSensor);
         sensors.add(aSensor);
         sensors.add(sensor2);
         aSensor.setActive(true);
-
         when(repository.getSensors()).thenReturn(sensors);
-        //securityService.addSensor(aSensor2);
-        //repository.getSensors();
         securityService.catDetected(false);
 
-        //securityService.changeSensorActivationStatus(aSensor2, true);
-
-
-        //     sensorMock.setActive(true);
-
-       // securityService.getSensors();
-        // verify(sensorMock);
+        lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+        Set<Sensor> sensorsSet2 = new HashSet<>(2);
+        Sensor sensor3 = new Sensor("back door", SensorType.DOOR);
+        sensors.add(sensor3);
+        sensor2.setActive(false);
+        when(repository.getSensors()).thenReturn(sensorsSet2);
+        securityService.catDetected(false);}
+    @Test
+    void resetSensorsTest()
+    {
+        Set<Sensor> sensors = new HashSet<>(2);
+        Sensor aSensor = new Sensor("front door", SensorType.DOOR);
+        Sensor sensor2 = new Sensor("back door", SensorType.DOOR);
+        sensors.add(aSensor);
+        sensors.add(sensor2);
+        aSensor.setActive(true);
+        sensor2.setActive(true);
+        securityService.resetSensors(sensors);
+        lenient().when(securityServiceMock.resetSensors(sensors)).thenReturn(sensors);
     }
-//    @Test
-//    void isSensorActiveTest()
-//    {
-//        when(securityService.isSensorActive()).thenReturn(true);
-//    }
-
-
 
 }

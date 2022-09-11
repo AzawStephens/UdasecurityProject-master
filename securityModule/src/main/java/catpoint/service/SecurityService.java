@@ -48,7 +48,7 @@ public class SecurityService {
 
             for(Sensor s : securityRepository.getSensors())
             {s.setActive(false);}}
-       statusListeners.forEach(StatusListener::sensorStatusChanged);
+        statusListeners.forEach(StatusListener::sensorStatusChanged);
       securityRepository.setArmingStatus(armingStatus);}
 public ArmingStatus saveArmingStatus()
 {
@@ -71,23 +71,38 @@ public ArmingStatus saveArmingStatus()
         if (catStat && getArmingStatus() == ArmingStatus.ARMED_HOME || catStat && getArmingStatus() == ArmingStatus.ARMED_AWAY) {
             setAlarmStatus(AlarmStatus.ALARM);
 
-        } else if (!catStat && getArmingStatus() == ArmingStatus.ARMED_HOME && isSensorActive() || !catStat && getArmingStatus() == ArmingStatus.ARMED_AWAY && isSensorActive())
-        {setAlarmStatus(AlarmStatus.ALARM);}
-        else {setAlarmStatus(AlarmStatus.NO_ALARM);}}
-    public boolean isSensorActive()
-    {
-        Set<Sensor> sensors;
-        boolean active = false;
-        sensors = securityRepository.getSensors();
-        for (Sensor sensor : sensors)
-        {
-            if(sensor.getActive().equals(true))
-            {
-                active = true;
-                return active;}
         }
-        return active;
-    }
+        else if (!catStat && getArmingStatus() == ArmingStatus.ARMED_HOME  || !catStat && getArmingStatus() == ArmingStatus.ARMED_AWAY )
+        {
+            for(Sensor sensor : securityRepository.getSensors())
+            {
+                if (sensor.getActive())
+                {
+                    setAlarmStatus(AlarmStatus.ALARM);
+                    securityRepository.updateSensor(sensor);
+                    break;
+                }else
+                {
+                    setAlarmStatus(AlarmStatus.NO_ALARM);
+                }
+            }
+        }
+        else {setAlarmStatus(AlarmStatus.NO_ALARM);}}
+//    public boolean isSensorActive()
+//    {
+//        Set<Sensor> sensors;
+//        boolean active= false;
+//        sensors = securityRepository.getSensors();
+//        for (Sensor sensor : sensors)
+//        {
+//            if(sensor.getActive().equals(true))
+//            {
+//                active = true;
+//                return active;
+//            }
+//        }
+//        return active;
+//    }
     /**
      * Register the StatusListener for alarm system updates from within the SecurityService.
      * @param statusListener
@@ -128,7 +143,9 @@ public ArmingStatus saveArmingStatus()
                 if(sensor.getActive() && alarmStatus.equals(AlarmStatus.PENDING_ALARM)) {
                     return AlarmStatus.ALARM;}break;}
             case DISARMED -> {return AlarmStatus.NO_ALARM;}
-        }return AlarmStatus.NO_ALARM;}
+        }
+        return AlarmStatus.NO_ALARM;
+    }
     public AlarmStatus noAlarmSet(AlarmStatus alarmStatus, Set<Sensor> sensors) //Works with test 3
     {
         for(Sensor sensor: sensors)

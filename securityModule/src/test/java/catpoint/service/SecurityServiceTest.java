@@ -16,6 +16,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,6 +26,9 @@ public class SecurityServiceTest {
 
     @Mock
     private SecurityRepository repository;
+
+    @Mock
+    private Sensor sensorMock;
 
     @Mock
     private SecurityService securityService;
@@ -39,6 +45,7 @@ public class SecurityServiceTest {
     void init() {
 
         securityService = new SecurityService(repository, imageServiceInterface);
+        //sensorMock = new Sensor("Front door",SensorType.DOOR);
 
     }
 
@@ -48,7 +55,7 @@ public class SecurityServiceTest {
     void pendingStatus_alarmIsArmed_SensorIsActivated_SystemReturnsPendingStatus(ArmingStatus armingStatus) //TEST 1
     {
         sensor.setActive(active);
-        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatus));
+        assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatus));
 
     }
 
@@ -57,8 +64,8 @@ public class SecurityServiceTest {
     void setStatusToAlarm_AlarmIsArmed_SensorIsActivated_SystemAlreadyPending_ReturnsAlamStatus(ArmingStatus armingStatus) //TEST 2
     {
         sensor.setActive(active);
-        Assertions.assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus));
-        Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.changeToAlarm(ArmingStatus.DISARMED, sensor, pendingAlarmStatus));
+        assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus));
+        assertEquals(AlarmStatus.NO_ALARM, securityService.changeToAlarm(ArmingStatus.DISARMED, sensor, pendingAlarmStatus));
     }
 
     @Test
@@ -66,14 +73,13 @@ public class SecurityServiceTest {
     {
         Sensor sensor1 = new Sensor("Front Door", SensorType.DOOR);
         Sensor sensor2 = new Sensor("Back Door", SensorType.DOOR);
-        boolean notActive = false;
-        sensor1.setActive(notActive);
-        sensor2.setActive(notActive);
+        sensor1.setActive(false);
+        sensor2.setActive(false);
         Set<Sensor> theSensors = new HashSet<>();
         theSensors.add(sensor1);
         theSensors.add(sensor2);
-        Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors));
-        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.noAlarmSet(AlarmStatus.NO_ALARM, theSensors));
+        assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors));
+
     }
 
     @ParameterizedTest
@@ -92,7 +98,7 @@ public class SecurityServiceTest {
         Sensor sensor = new Sensor("Back Window", SensorType.WINDOW);
         sensor.setActive(true);
         boolean wishToActivate = true;
-        Assertions.assertEquals(AlarmStatus.ALARM, securityService.sensorAlreadyActivated(sensor, wishToActivate, pendingAlarmStatus));
+        assertEquals(AlarmStatus.ALARM, securityService.sensorAlreadyActivated(sensor, wishToActivate, pendingAlarmStatus));
     }
 
     @Test
@@ -101,7 +107,7 @@ public class SecurityServiceTest {
         Sensor sensor = new Sensor("Back Window", SensorType.WINDOW);
         sensor.setActive(false);
         boolean wishToActivate = false;
-        Assertions.assertEquals(pendingAlarmStatus, securityService.sensorAlreadyActivated(sensor, wishToActivate, pendingAlarmStatus));
+        assertEquals(pendingAlarmStatus, securityService.sensorAlreadyActivated(sensor, wishToActivate, pendingAlarmStatus));
     }
 
     @Test
@@ -131,11 +137,11 @@ public class SecurityServiceTest {
         Set<Sensor> theSensors = new HashSet<>();
         theSensors.add(sensor1);
         theSensors.add(sensor2);
-        Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noCatNoAlarmSet(catDetected, theSensors));
+        assertEquals(AlarmStatus.NO_ALARM, securityService.noCatNoAlarmSet(catDetected, theSensors));
         isActive = true;
         sensor1.setActive(isActive);
         sensor2.setActive(isActive);
-        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.noCatNoAlarmSet(catDetected, theSensors));
+        assertEquals(AlarmStatus.PENDING_ALARM, securityService.noCatNoAlarmSet(catDetected, theSensors));
 
     }
 
@@ -143,8 +149,8 @@ public class SecurityServiceTest {
     void noAlarm_systemDisarmed_ReturnNoAlarm() // TEST 9
     {
         ArmingStatus armingStatus = ArmingStatus.DISARMED;
-        Assertions.assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarm(armingStatus));  //invokes the call to noAlarm
-        Assertions.assertEquals(AlarmStatus.PENDING_ALARM, securityService.noAlarm(ArmingStatus.ARMED_HOME));
+        assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarm(armingStatus));  //invokes the call to noAlarm
+        assertEquals(AlarmStatus.PENDING_ALARM, securityService.noAlarm(ArmingStatus.ARMED_HOME));
     }
 
     @ParameterizedTest
@@ -158,7 +164,7 @@ public class SecurityServiceTest {
         Set<Sensor> theSensors = new HashSet<>();
         theSensors.add(sensor1);
         theSensors.add(sensor2);
-        Assertions.assertEquals(theSensors, securityService.resetTheSensors(armingStatus, theSensors));
+        assertEquals(theSensors, securityService.resetTheSensors(armingStatus, theSensors));
         for (Sensor aSensor : theSensors) {
             verify(repository, atLeastOnce()).updateSensor(aSensor);
         }
@@ -220,22 +226,131 @@ public class SecurityServiceTest {
        securityService.setArmingStatus(ArmingStatus.DISARMED);
        lenient().when(repository.getCatStatus()).thenReturn(true);
        lenient().when(securityService.saveArmingStatus()).thenReturn(ArmingStatus.DISARMED);
-       securityService.setArmingStatus(ArmingStatus.DISARMED);
+       securityService.setArmingStatus(ArmingStatus.ARMED_HOME);
+        verify(repository).setArmingStatus(ArmingStatus.ARMED_HOME);
+
+       // Set<Sensor> sensors = new HashSet<>();
+
+        //sensors.add(sensor1);
+        //sensors.add(sensor2);
+
+
+
+        //sensor1.setActive(false);
+        //sensor2.setActive(false);
+       // securityService.setArmingStatus(ArmingStatus.ARMED_AWAY);
+
+       // repository.setArmingStatus(armingStatus);
+
+
+        sensor.setActive(false);
     }
+    @ParameterizedTest
+    @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY"})
+    void setArmingStatusTestTwo(ArmingStatus armingStatus) {
+
+
+        Sensor sensor1 = new Sensor("Living Room", SensorType.DOOR);
+        Sensor sensor2 = new Sensor("Back door", SensorType.DOOR);
+        repository.addSensor(sensor1);
+        repository.addSensor(sensor2);
+        sensor1.setActive(false);
+        sensor2.setActive(false);
+        securityService.setArmingStatus(armingStatus);
+        sensorMock.setActive(false);
+       // verify(sensorMock).setActive(false);
+    }
+
     @Test
     void catDetectedTest()
     {
-            lenient().when(repository.getCatStatus()).thenReturn(true);
+
+            repository.setCatStatus(false);
+            lenient().when(repository.getCatStatus()).thenReturn(false);
+            lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+
+              lenient().when(repository.getCatStatus()).thenReturn(true); //cause catStat to get hit with true
+              repository.setArmingStatus(ArmingStatus.ARMED_HOME);
+             lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+             securityService.catDetected(true);
+
+             lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+            securityService.catDetected(true);
+
             lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
             securityService.catDetected(true);
-            lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
-            securityService.catDetected(false);
 
-        lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
-        sensor.setActive(true);
-        securityService.addSensor(sensor);
+
+
+            lenient().when(repository.getCatStatus()).thenReturn(false);
+            lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
         securityService.catDetected(false);
-        verify(repository, atLeast(2)).setAlarmStatus(AlarmStatus.ALARM);
+
+
+
+
+            //repository.setArmingStatus(ArmingStatus.ARMED_HOME);
+            //lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+       //lenient().when(securityServiceMock.isSensorActive()).thenReturn(true);
+      //  Set<Sensor> sensors = new HashSet<>();
+//        Sensor sensor1 = new Sensor("Front door", SensorType.DOOR);
+//        Sensor sensor2 = new Sensor("Back door", SensorType.WINDOW);
+//        sensor1.setActive(true);
+//        sensor2.setActive(true);
+//        repository.addSensor(sensor1);
+//        repository.addSensor(sensor2);
+//        repository.updateSensor(sensor1);
+//        repository.updateSensor(sensor2);
+
+        //securityService.isSensorActive();
+       // securityService.catDetected(false);
+       //
+        //   lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+
+
+
+//
+//            lenient().when(repository.getCatStatus()).thenReturn(false);
+//            repository.setCatStatus(true);
+//           lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+//            sensorMock.setActive(true);
+//        securityService.catDetected(false);
+
+
+
+
+        //assertEquals(AlarmStatus.NO_ALARM, repository.getAlarmStatus());
+
+      // verify(repository, atLeast(2)).setAlarmStatus(AlarmStatus.ALARM);
+    }
+    @Test
+    void catDetectedPartTwo()
+    {
+        lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+        Set<Sensor> sensors = new HashSet<>(2);
+        Sensor aSensor = new Sensor("front door", SensorType.DOOR);
+        Sensor sensor2 = new Sensor("back door", SensorType.DOOR);
+        //Sensor aSensor2 = new Sensor("back door", SensorType.DOOR);
+
+       // aSensor.setActive(true);
+       // aSensor.setActive(true);
+      //  repository.addSensor(aSensor);
+        sensors.add(aSensor);
+        sensors.add(sensor2);
+        aSensor.setActive(true);
+
+        when(repository.getSensors()).thenReturn(sensors);
+        //securityService.addSensor(aSensor2);
+        //repository.getSensors();
+        securityService.catDetected(false);
+
+        //securityService.changeSensorActivationStatus(aSensor2, true);
+
+
+        //     sensorMock.setActive(true);
+
+       // securityService.getSensors();
+        // verify(sensorMock);
     }
 //    @Test
 //    void isSensorActiveTest()

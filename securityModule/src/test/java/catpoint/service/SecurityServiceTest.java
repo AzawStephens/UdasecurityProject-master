@@ -51,6 +51,11 @@ public class SecurityServiceTest {
     {
         sensor.setActive(active);
         assertEquals(AlarmStatus.PENDING_ALARM, securityService.changeToPending(sensor, armingStatus));
+        sensor.setActive(false);
+        securityService.changeToPending(sensor, ArmingStatus.DISARMED);
+        sensor.setActive(false);
+        securityService.changeToPending(sensor, ArmingStatus.ARMED_HOME);
+
 
     }
 
@@ -238,6 +243,9 @@ public class SecurityServiceTest {
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
         securityService.changeSensorActivationStatus(aSensor, true);
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
+        securityService.handleSensorActivated();
+        when(securityService.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+
         securityService.handleSensorActivated();
     }
     @Test

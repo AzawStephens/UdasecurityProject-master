@@ -132,6 +132,7 @@ public class SecurityService {
             alarmStatus = AlarmStatus.PENDING_ALARM;
         } else if (sensorStatus.getActive() && armingStatus.equals(ArmingStatus.ARMED_AWAY)) {
             alarmStatus =  AlarmStatus.PENDING_ALARM;}
+        else{return alarmStatus;}
         return alarmStatus;}
     public AlarmStatus changeToAlarm(ArmingStatus armingStatus, Sensor sensor, AlarmStatus alarmStatus) //Works with test 2
     {

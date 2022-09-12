@@ -1,4 +1,6 @@
 package catpoint.service;
+import catpoint.application.SensorPanel;
+import catpoint.application.StatusListener;
 import catpoint.data.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -197,6 +199,7 @@ public class SecurityServiceTest {
         for (Sensor aSensor : theSensors) {
             verify(repository, atLeastOnce()).updateSensor(aSensor);
         }
+        securityService.resetTheSensors(ArmingStatus.DISARMED, theSensors);
     }
 
     @Test
@@ -311,10 +314,10 @@ public class SecurityServiceTest {
         securityService.catDetected(false);
 
         lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
-        Set<Sensor> sensorsSet2 = new HashSet<>(2);
+        Set<Sensor> sensorsSet2 = new HashSet<>(1);
         Sensor sensor3 = new Sensor("back door", SensorType.DOOR);
-        sensor2.setActive(false);
-        sensors.add(sensor3);
+        sensor3.setActive(false);
+        sensorsSet2.add(sensor3);
         when(repository.getSensors()).thenReturn(sensorsSet2);
         securityService.catDetected(false);}
     @Test
@@ -330,5 +333,20 @@ public class SecurityServiceTest {
         securityService.resetSensors(sensors);
         lenient().when(securityServiceMock.resetSensors(sensors)).thenReturn(sensors);
     }
-
+@Test
+    void addStatsListenerTest()
+{
+    StatusListener statusListener = new SensorPanel(securityServiceMock);
+    securityService.addStatusListener(statusListener);
+}
+@Test
+    void removeSensorTest()
+{
+    securityService.removeSensor(sensor);
+}
+@Test
+    void addSensorTest()
+{
+    securityService.addSensor(sensor);
+}
 }

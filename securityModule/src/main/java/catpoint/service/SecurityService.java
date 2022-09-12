@@ -241,6 +241,9 @@ public class SecurityService {
                 aSensor.setActive(false);
                 securityRepository.updateSensor(aSensor);
             }
+        }else if(armingStatus.equals(ArmingStatus.DISARMED))
+        {
+            return sensors;
         }
         return sensors;
     }

@@ -27,16 +27,13 @@ public class SecurityServiceTest {
     @Mock
     private Sensor sensorMock;
 
-    @Mock
+
     private SecurityService securityService;
     private boolean active = true;
     private Sensor sensor = new Sensor();
     private AlarmStatus pendingAlarmStatus = AlarmStatus.PENDING_ALARM;
     @Mock
     private ImageServiceInterface imageServiceInterface;
-
-    @Mock
-    private SecurityService securityServiceMock;
 
     @BeforeEach
     void init() {
@@ -64,12 +61,11 @@ public class SecurityServiceTest {
     void setStatusToAlarm_AlarmIsArmed_SensorIsActivated_SystemAlreadyPending_ReturnsAlamStatus(ArmingStatus armingStatus) //TEST 2
     {
         sensor.setActive(true);
-//        assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus));
-//        assertEquals(AlarmStatus.NO_ALARM, securityService.changeToAlarm(ArmingStatus.DISARMED, sensor, pendingAlarmStatus));
+
         securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus);
-//        securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus);
+
         sensor.setActive(true);
-        //verify(securityServiceMock).changeToAlarm(armingStatus, sensor, pendingAlarmStatus);
+
         securityService.changeToAlarm(armingStatus, sensor, AlarmStatus.NO_ALARM);
         sensor.setActive(false);
         securityService.changeToAlarm(armingStatus, sensor, AlarmStatus.NO_ALARM);
@@ -86,7 +82,6 @@ public class SecurityServiceTest {
         Set<Sensor> theSensors = new HashSet<>();
         theSensors.add(sensor1);
         theSensors.add(sensor2);
-        //assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors));
         securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors);
         Sensor sensor3 = new Sensor("Front Door", SensorType.DOOR);
         Sensor sensor4 = new Sensor("Back Door", SensorType.DOOR);
@@ -98,7 +93,6 @@ public class SecurityServiceTest {
         securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors2);
         securityService.noAlarmSet(AlarmStatus.NO_ALARM, theSensors2);
 
-//        securityService.noAlarmSet(AlarmStatus.ALARM, theSensors2);
     }
     @Test
     void noAlarmSetTest2()
@@ -254,7 +248,7 @@ public class SecurityServiceTest {
         when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.ALARM);
         securityService.handleSensorDeactivated();
         verify(repository).setAlarmStatus(AlarmStatus.PENDING_ALARM);
-        lenient().when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
+        when(securityService.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
         securityService.handleSensorDeactivated();
     }
     @ParameterizedTest
@@ -264,8 +258,8 @@ public class SecurityServiceTest {
         repository.setArmingStatus(ArmingStatus.DISARMED);
        when(repository.getArmingStatus()).thenReturn(armingStatus);
        securityService.setArmingStatus(ArmingStatus.DISARMED);
-       lenient().when(repository.getCatStatus()).thenReturn(true);
-       lenient().when(securityService.saveArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+       when(repository.getCatStatus()).thenReturn(true);
+       when(securityService.saveArmingStatus()).thenReturn(ArmingStatus.DISARMED);
        securityService.setArmingStatus(ArmingStatus.ARMED_HOME);
         verify(repository).setArmingStatus(ArmingStatus.ARMED_HOME);
         sensor.setActive(false);
@@ -288,30 +282,30 @@ public class SecurityServiceTest {
     {
 
             repository.setCatStatus(false);
-            lenient().when(repository.getCatStatus()).thenReturn(false);
-            lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+            when(repository.getCatStatus()).thenReturn(false);
+            when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
 
-              lenient().when(repository.getCatStatus()).thenReturn(true); //cause catStat to get hit with true
+            when(repository.getCatStatus()).thenReturn(true); //cause catStat to get hit with true
               repository.setArmingStatus(ArmingStatus.ARMED_HOME);
-             lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
+             when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
              securityService.catDetected(true);
 
-             lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
+             when(repository.getArmingStatus()).thenReturn(ArmingStatus.DISARMED);
             securityService.catDetected(true);
 
-            lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+            when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
             securityService.catDetected(true);
 
 
 
-            lenient().when(repository.getCatStatus()).thenReturn(false);
-            lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+            when(repository.getCatStatus()).thenReturn(false);
+            when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
         securityService.catDetected(false);
     }
     @Test
     void catDetectedPartTwo()
     {
-        lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+        when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
         Set<Sensor> sensors = new HashSet<>(2);
         Sensor aSensor = new Sensor("front door", SensorType.DOOR);
         Sensor sensor2 = new Sensor("back door", SensorType.DOOR);
@@ -321,7 +315,7 @@ public class SecurityServiceTest {
         when(repository.getSensors()).thenReturn(sensors);
         securityService.catDetected(false);
 
-        lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
+        when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
         Set<Sensor> sensorsSet2 = new HashSet<>(1);
         Sensor sensor3 = new Sensor("back door", SensorType.DOOR);
         sensor3.setActive(false);
@@ -339,12 +333,12 @@ public class SecurityServiceTest {
         aSensor.setActive(true);
         sensor2.setActive(true);
         securityService.resetSensors(sensors);
-        lenient().when(securityServiceMock.resetSensors(sensors)).thenReturn(sensors);
+
     }
 @Test
     void addStatsListenerTest()
 {
-    StatusListener statusListener = new SensorPanel(securityServiceMock);
+    StatusListener statusListener = new SensorPanel(securityService);
     securityService.addStatusListener(statusListener);
 }
 @Test

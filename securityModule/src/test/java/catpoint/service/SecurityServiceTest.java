@@ -53,13 +53,21 @@ public class SecurityServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY"})
+    @EnumSource(value = ArmingStatus.class, names = {"ARMED_HOME", "ARMED_AWAY","DISARMED"})
     void setStatusToAlarm_AlarmIsArmed_SensorIsActivated_SystemAlreadyPending_ReturnsAlamStatus(ArmingStatus armingStatus) //TEST 2
     {
-        sensor.setActive(active);
-        assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus));
-        assertEquals(AlarmStatus.NO_ALARM, securityService.changeToAlarm(ArmingStatus.DISARMED, sensor, pendingAlarmStatus));
+        sensor.setActive(true);
+//        assertEquals(AlarmStatus.ALARM, securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus));
+//        assertEquals(AlarmStatus.NO_ALARM, securityService.changeToAlarm(ArmingStatus.DISARMED, sensor, pendingAlarmStatus));
+        securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus);
+//        securityService.changeToAlarm(armingStatus, sensor, pendingAlarmStatus);
+        sensor.setActive(true);
+        //verify(securityServiceMock).changeToAlarm(armingStatus, sensor, pendingAlarmStatus);
+        securityService.changeToAlarm(armingStatus, sensor, AlarmStatus.NO_ALARM);
+        sensor.setActive(false);
+        securityService.changeToAlarm(armingStatus, sensor, AlarmStatus.NO_ALARM);
     }
+
 
     @Test
     void setStatusToNoAlarm_AlarmInPendingMode_NoSensorsAreActive_ReturnNoAlarmStatus() //TEST 3
@@ -71,7 +79,23 @@ public class SecurityServiceTest {
         Set<Sensor> theSensors = new HashSet<>();
         theSensors.add(sensor1);
         theSensors.add(sensor2);
-        assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors));
+        //assertEquals(AlarmStatus.NO_ALARM, securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors));
+        securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors);
+        Sensor sensor3 = new Sensor("Front Door", SensorType.DOOR);
+        Sensor sensor4 = new Sensor("Back Door", SensorType.DOOR);
+        sensor3.setActive(true);
+        sensor4.setActive(true);
+        Set<Sensor> theSensors2 = new HashSet<>();
+        theSensors2.add(sensor3);
+        theSensors2.add(sensor4);
+        securityService.noAlarmSet(AlarmStatus.PENDING_ALARM, theSensors2);
+        securityService.noAlarmSet(AlarmStatus.NO_ALARM, theSensors2);
+
+//        securityService.noAlarmSet(AlarmStatus.ALARM, theSensors2);
+    }
+    @Test
+    void noAlarmSetTest2()
+    {
 
     }
 
@@ -135,6 +159,18 @@ public class SecurityServiceTest {
         sensor1.setActive(isActive);
         sensor2.setActive(isActive);
         assertEquals(AlarmStatus.PENDING_ALARM, securityService.noCatNoAlarmSet(catDetected, theSensors));
+
+
+        Set<Sensor> moreSensors = new HashSet<>();
+        Sensor sensor3 = new Sensor("Back door", SensorType.DOOR);
+        Sensor sensor4 = new Sensor("Front window", SensorType.WINDOW);
+        sensor3.setActive(false);
+        sensor4.setActive(false);
+        moreSensors.add(sensor3);
+        moreSensors.add(sensor4);
+        repository.setArmingStatus(ArmingStatus.ARMED_HOME);
+
+        securityService.catDetected(false);
 
     }
 
@@ -277,8 +313,8 @@ public class SecurityServiceTest {
         lenient().when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_AWAY);
         Set<Sensor> sensorsSet2 = new HashSet<>(2);
         Sensor sensor3 = new Sensor("back door", SensorType.DOOR);
-        sensors.add(sensor3);
         sensor2.setActive(false);
+        sensors.add(sensor3);
         when(repository.getSensors()).thenReturn(sensorsSet2);
         securityService.catDetected(false);}
     @Test
